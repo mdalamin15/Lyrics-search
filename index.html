@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Hard Rock Solution - Song Lyric App</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Custom css -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar  navbar-dark my-3">
+            <a class="navbar-brand" href="#">
+                <img src="images/logo.png" alt="Hard Rock Solution">
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavId" aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
+                <img src="images/toggler-icon.svg" alt="">
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavId">
+                <ul class="navbar-nav ml-auto mt-2 mt-lg-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+                        <div class="dropdown-menu" aria-labelledby="dropdownId">
+                            <a class="dropdown-item" href="#">Action 1</a>
+                            <a class="dropdown-item" href="#">Action 2</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <header>
+            <div class="container">
+                <h1 class="text-center">Search lyric</h1>
+                <form id="form"  autocomplete="off">
+                    <input type="text" id="search" class="form-control" placeholder="Enter artist name or song title...">
+                    <button class="btn btn-success search-btn">Search</button>
+                </form>
+            </div>
+           
+        </header>
+        <section id="video"></section>
+        <section class="result" id="result">
+            <h1>Results will be displayed here... </h1>
+            
+        </section>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+   
+
+    <!-- Custom Script Here -->
+    <script>
+const form = document.getElementById('form')
+const search = document.getElementById('search')
+const result = document.getElementById('result')
+
+
+/// api URL ///
+const apiURL = 'https://api.lyrics.ovh';
+
+
+/// adding event listener in form
+
+form.addEventListener('submit', e=> {
+    e.preventDefault();
+    searchValue = search.value.trim()
+
+    if(!searchValue){
+        alert("There is nothing to search")
+    }
+    else{ 
+        searchSong(searchValue)
+    }
+})
+
+
+//search song 
+async function searchSong(searchValue){
+    const searchResult = await fetch(`${apiURL}/suggest/${searchValue}`)
+    const data = await searchResult.json();
+
+    // console.log(finaldata)
+    showData(data)
+}
+
+//display final result in DO
+function showData(data){
+  
+    result.innerHTML = `
+    <ul class="song-list">
+      ${data.data
+        .map(song=> `<li>
+                    <div>
+                        <strong>${song.artist.name}</strong> -${song.title} 
+                    </div>
+                    <span data-artist="${song.artist.name}" data-songtitle="${song.title}"> get lyrics</span>
+                </li>`
+        )
+        .join('')}
+    </ul>
+  `;
+}
+
+
+
+
+//event listener in get lyrics button
+result.addEventListener('click', e=>{
+    const clickedElement = e.target;
+
+    //checking clicked elemet is button or not
+    if (clickedElement.tagName === 'SPAN'){
+        const artist = clickedElement.getAttribute('data-artist');
+        const songTitle = clickedElement.getAttribute('data-songtitle');
+        
+        getLyrics(artist, songTitle)
+    }
+})
+
+// Get lyrics for song
+async function getLyrics(artist, songTitle) {
+    const res = await fetch(`${apiURL}/v1/${artist}/${songTitle}`);
+    const data = await res.json();
+  
+    const lyrics = data.lyrics.replace(/(\r\n|\r|\n)/g, '<br>');
+  
+    result.innerHTML = `<h2><strong>${artist}</strong> - ${songTitle}</h2>
+    <p>${lyrics}</p>`;
+  
+  }
+    </script>
+
+</body>
+
+</html>
+
